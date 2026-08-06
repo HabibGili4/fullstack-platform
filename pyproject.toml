@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-latihan-fastapi = "latihan_fastapi:main"
+latihan-fastapi = "latihan_fastapi.main:app"
 
 [build-system]
 requires = ["uv_build>=0.12.2,<0.13.0"]
