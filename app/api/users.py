@@ -8,6 +8,6 @@ def get_users():
     return {"message": "all users"}
 
 
-@router.get("/{id}")
-def get_user(id: int):
-    return {"message": "user detail"}
+@router.get("/{user_id}")
+def get_user(user_id: int):
+    return {"id": user_id}

@@ -8,6 +8,6 @@ def get_products():
     return {"message": "all products"}
 
 
-@router.get("/{id}")
-def get_product(id: int):
-    return {"message": "product detail"}
+@router.get("/{product_id}")
+def get_product(product_id: int):
+    return {"id": product_id}
