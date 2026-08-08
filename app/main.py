@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.accounts import router as accounts_router
 from app.api.health import router as health_router
 from app.api.posts import router as posts_router
 from app.api.products import router as products_router
@@ -18,6 +19,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(accounts_router)
 app.include_router(health_router)
 app.include_router(posts_router)
 app.include_router(products_router)
