@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
+
+from app.schemas.user import UserCreate
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
@@ -11,3 +13,8 @@ def get_users():
 @router.get("/{user_id}")
 def get_user(user_id: int):
     return {"id": user_id}
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def create_user(body: UserCreate):
+    return body.model_dump()
