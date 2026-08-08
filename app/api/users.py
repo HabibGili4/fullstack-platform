@@ -3,24 +3,24 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.dependencies import get_current_user
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.schemas.user import UserCreate, UserListResponse, UserResponse, UserUpdate
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
 
-@router.get("/")
+@router.get("/", response_model=UserListResponse)
 def get_users(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     service = UserService(db)
     users = service.get_all()
     return {"users": users, "user": current_user}
 
 
-@router.get("/{user_id}")
+@router.get("/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     service = UserService(db)
     user = service.get_by_id(user_id)
-    return {"id": user.id, "name": user.name, "email": user.email, "age": user.age, "user": current_user}
+    return user
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

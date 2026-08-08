@@ -33,6 +33,11 @@ class UserResponse(BaseModel):
     age: int
 
 
+class UserListResponse(BaseModel):
+    users: list[UserResponse]
+    user: dict
+
+
 class UserUpdate(BaseModel):
     name: str = Field(min_length=3, max_length=255)
     email: EmailStr
