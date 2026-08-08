@@ -1,5 +1,5 @@
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models import Base
 
@@ -13,3 +13,5 @@ class User(Base):
     age: Mapped[int] = mapped_column(Integer, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     phone_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    posts: Mapped[list["Post"]] = relationship(back_populates="author")
