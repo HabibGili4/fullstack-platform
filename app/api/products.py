@@ -1,19 +1,16 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_pagination
 
 router = APIRouter(prefix="/api/v1/products", tags=["Products"])
 
 
 @router.get("/")
 def get_products(
-    page: int = Query(default=1, ge=1),
-    limit: int = Query(default=10, ge=1),
-    category: str = Query(default=None),
-    search: str = Query(default=None),
+    pagination: dict = Depends(get_pagination),
     current_user: dict = Depends(get_current_user),
 ):
-    return {"page": page, "limit": limit, "category": category, "search": search, "user": current_user}
+    return {**pagination, "user": current_user}
 
 
 @router.get("/price/{price}")
