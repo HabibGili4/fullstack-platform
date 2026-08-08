@@ -8,8 +8,9 @@ def get_products(
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1),
     category: str = Query(default=None),
+    search: str = Query(default=None),
 ):
-    return {"page": page, "limit": limit, "category": category}
+    return {"page": page, "limit": limit, "category": category, "search": search}
 
 
 @router.get("/price/{price}")
