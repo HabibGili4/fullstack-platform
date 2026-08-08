@@ -1,11 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 router = APIRouter(prefix="/api/v1/products", tags=["Products"])
 
 
 @router.get("/")
-def get_products():
-    return {"message": "all products"}
+def get_products(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1),
+    category: str = Query(default=None),
+):
+    return {"page": page, "limit": limit, "category": category}
 
 
 @router.get("/price/{price}")
