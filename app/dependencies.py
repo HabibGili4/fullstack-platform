@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.permissions import ROLE_PERMISSIONS
 from app.models.user_model import User
 from app.repositories.user_repository import UserRepository
 
@@ -40,7 +41,21 @@ def get_current_user(
             detail="User tidak ditemukan",
         )
 
+    user.role = payload.get("role", "user")
+
     return user
+
+
+def require_permission(permission: str):
+    def permission_checker(current_user: User = Depends(get_current_user)):
+        user_permissions = ROLE_PERMISSIONS.get(current_user.role, [])
+        if permission not in user_permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Tidak memiliki akses",
+            )
+        return current_user
+    return permission_checker
 
 
 def get_pagination(

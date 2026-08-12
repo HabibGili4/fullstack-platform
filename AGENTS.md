@@ -38,6 +38,20 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
   | Refresh token valid | 200 + token baru |
   | Refresh token expired/sudah dipakai | 401 |
 
+## Authorization (RBAC)
+- Role: `admin`, `editor`, `user` (default: `user`)
+- Permissions didefinisikan di `app/core/permissions.py`
+- Cek permission: `require_permission("product:read")` dependency
+- Products endpoint:
+  | Endpoint | Method | Permission | Admin | Editor | User |
+  |----------|--------|------------|-------|--------|------|
+  | `/products` | GET | `product:read` | ✓ | ✓ | ✓ |
+  | `/products` | POST | `product:create` | ✓ | ✓ | ✗ |
+  | `/products/{id}` | PUT | `product:update` | ✓ | ✓ | ✗ |
+  | `/products/{id}` | DELETE | `product:delete` | ✓ | ✗ | ✗ |
+- Role di JWT payload (bukan DB lookup) → user harus login ulang jika role berubah
+- Seed test users: `python seed_roles.py`
+
 ## Penting (sering salah duga)
 - `get_current_user` hanya mock; banyak endpoint menggunakannya sebagai dependency.
 - Password hashing: SHA-256 via `hashlib` (tanpa salt) di `app/services/user_service.py:28`. Bukan bcrypt/argon2.

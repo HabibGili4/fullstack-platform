@@ -31,6 +31,7 @@ class UserService:
             email=email,
             age=age,
             password_hash=password_hash,
+            role="user",
         )
         return user
 

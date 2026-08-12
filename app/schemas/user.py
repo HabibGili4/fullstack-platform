@@ -31,6 +31,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     age: int
+    role: str
 
 
 class UserListResponse(BaseModel):

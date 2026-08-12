@@ -56,7 +56,7 @@ class AuthService:
         self.refresh_token_repo.revoke_all_for_user(user.id)
 
         access_token = create_access_token(
-            data={"sub": str(user.id)},
+            data={"sub": str(user.id), "role": user.role},
             expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         )
 
@@ -107,7 +107,7 @@ class AuthService:
         self.refresh_token_repo.revoke(refresh_token)
 
         access_token = create_access_token(
-            data={"sub": str(user.id)},
+            data={"sub": str(user.id), "role": user.role},
             expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         )
 

@@ -13,5 +13,6 @@ class User(Base):
     age: Mapped[int] = mapped_column(Integer, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     phone_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    role: Mapped[str] = mapped_column(String(50), nullable=False, default="user")
 
     posts: Mapped[list["Post"]] = relationship(back_populates="author")
