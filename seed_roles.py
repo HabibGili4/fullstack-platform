@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 from app.models.user_model import User
 from app.models.post_model import Post  # noqa: F401 — pastikan relasi terdeteksi
+from app.models.task_model import Task  # noqa: F401 — pastikan relasi terdeteksi
 from app.services.auth_service import pwd_context
 
 engine = create_engine(settings.DATABASE_URL)
@@ -11,6 +12,7 @@ SessionLocal = sessionmaker(bind=engine)
 
 users = [
     {"name": "Admin User", "email": "admin@test.com", "age": 25, "password": "password123", "role": "admin"},
+    {"name": "Manager User", "email": "manager@test.com", "age": 28, "password": "password123", "role": "manager"},
     {"name": "Editor User", "email": "editor@test.com", "age": 22, "password": "password123", "role": "editor"},
     {"name": "Regular User", "email": "user@test.com", "age": 20, "password": "password123", "role": "user"},
 ]

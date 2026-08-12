@@ -49,6 +49,13 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
   | `/products` | POST | `product:create` | ✓ | ✓ | ✗ |
   | `/products/{id}` | PUT | `product:update` | ✓ | ✓ | ✗ |
   | `/products/{id}` | DELETE | `product:delete` | ✓ | ✗ | ✗ |
+- Tasks endpoint:
+  | Endpoint | Method | Permission | Admin | Manager | Editor | User |
+  |----------|--------|------------|-------|---------|--------|------|
+  | `/tasks` | GET | `task:view` | ✓ | ✓ | ✗ | ✗ |
+  | `/tasks` | POST | `task:create` | ✓ | ✓ | ✗ | ✗ |
+  | `/tasks/{id}` | PUT | `task:update` | ✓ | ✓ | ✗ | ✗ |
+  | `/tasks/{id}` | DELETE | `task:delete` | ✓ | ✗ | ✗ | ✗ |
 - Role di JWT payload (bukan DB lookup) → user harus login ulang jika role berubah
 - Seed test users: `python seed_roles.py`
 

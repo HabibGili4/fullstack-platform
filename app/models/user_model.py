@@ -16,3 +16,4 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(50), nullable=False, default="user")
 
     posts: Mapped[list["Post"]] = relationship(back_populates="author")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="assignee")

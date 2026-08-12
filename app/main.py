@@ -6,6 +6,7 @@ from app.api.accounts import router as accounts_router
 from app.api.health import router as health_router
 from app.api.posts import router as posts_router
 from app.api.products import router as products_router
+from app.api.tasks import router as tasks_router
 from app.api.users import router as users_router
 from app.core.database import engine
 from app.models import Base
@@ -23,6 +24,7 @@ app.include_router(accounts_router)
 app.include_router(health_router)
 app.include_router(posts_router)
 app.include_router(products_router)
+app.include_router(tasks_router)
 app.include_router(users_router)
 
 
