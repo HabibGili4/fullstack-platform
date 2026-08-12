@@ -9,13 +9,14 @@ from app.dependencies import get_current_user
 from app.models.user_model import User
 from app.schemas.user import (
     LoginRequest,
+    RefreshRequest,
     TokenResponse,
     UserCreate,
     UserListResponse,
     UserResponse,
     UserUpdate,
 )
-from app.services.auth_service import AuthService, create_access_token
+from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
@@ -24,14 +25,15 @@ router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, db: Session = Depends(get_db)):
     auth_service = AuthService(db)
-    user = auth_service.authenticate(body.email, body.password)
+    result = auth_service.authenticate(body.email, body.password)
+    return result
 
-    token = create_access_token(
-        data={"sub": str(user.id)},
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
 
-    return {"access_token": token, "token_type": "bearer"}
+@router.post("/refresh", response_model=TokenResponse)
+def refresh(body: RefreshRequest, db: Session = Depends(get_db)):
+    auth_service = AuthService(db)
+    result = auth_service.refresh(body.refresh_token)
+    return result
 
 
 @router.get("/me", response_model=UserResponse)

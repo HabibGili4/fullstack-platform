@@ -19,12 +19,15 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
 - DB auto-create saat startup via `Base.metadata.create_all` di lifespan (`app/main.py`)
 
 ## Autentikasi (JWT)
-- Login: `POST /api/v1/users/login` → body `{"email": "...", "password": "..."}` → returns `{"access_token": "...", "token_type": "bearer"}`
+- Login: `POST /api/v1/users/login` → body `{"email": "...", "password": "..."}` → returns `{"access_token": "...", "refresh_token": "...", "token_type": "bearer"}`
+- Refresh: `POST /api/v1/users/refresh` → body `{"refresh_token": "..."}` → returns token baru + refresh token baru
 - Akses endpoint terproteksi: header `Authorization: Bearer <token>`
 - GET current user: `GET /api/v1/users/me` → returns data user dari token
 - Password hashing: bcrypt via `passlib` (`app/services/auth_service.py`)
 - JWT encode/decode: `python-jose` dengan `HS256` + `SECRET_KEY`
-- Token expiry: 30 menit (configurable via `ACCESS_TOKEN_EXPIRE_MINUTES`)
+- Token expiry: access 30 menit, refresh 7 hari (configurable)
+- Refresh token rotation: setiap refresh, token lama di-revoke (single-use)
+- Login baru revoke semua refresh token lama (logout semua device)
 - Behavior:
   | Request | Hasil |
   |---------|-------|
@@ -32,6 +35,8 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
   | Token salah | 401 |
   | Token expired | 401 |
   | Token valid | 200 + data user |
+  | Refresh token valid | 200 + token baru |
+  | Refresh token expired/sudah dipakai | 401 |
 
 ## Penting (sering salah duga)
 - `get_current_user` hanya mock; banyak endpoint menggunakannya sebagai dependency.
