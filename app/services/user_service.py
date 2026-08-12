@@ -1,10 +1,9 @@
-import hashlib
-
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.user_model import User
 from app.repositories.user_repository import UserRepository
+from app.services.auth_service import pwd_context
 
 
 class UserService:
@@ -25,7 +24,7 @@ class UserService:
         if existing:
             raise HTTPException(status_code=400, detail="Email sudah terdaftar")
 
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        password_hash = pwd_context.hash(password)
 
         user = self.repo.create(
             name=name,

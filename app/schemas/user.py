@@ -61,3 +61,13 @@ class UserUpdate(BaseModel):
         if v < 0:
             raise ValueError("Age tidak boleh negatif")
         return v
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
