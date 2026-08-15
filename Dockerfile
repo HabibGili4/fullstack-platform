@@ -1,4 +1,8 @@
-FROM python:3.11-slim
+# ============================================
+# STAGE 1: builder
+# Install dependencies
+# ============================================
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -9,6 +13,19 @@ COPY pyproject.toml uv.lock .python-version README.md ./
 ENV UV_PROJECT_ENVIRONMENT="/usr/local"
 RUN uv sync --no-dev
 
+# ============================================
+# STAGE 2: runtime
+# Only Python + deps + app code (no uv)
+# ============================================
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+# Copy installed packages dari builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
+COPY --from=builder /usr/local/bin/uvicorn /usr/local/bin/uvicorn
+
+# Copy application code
 COPY app/ ./app/
 COPY alembic/ ./alembic/
 COPY alembic.ini ./

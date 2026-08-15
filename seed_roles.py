@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.models.user_model import User
 from app.models.post_model import Post  # noqa: F401 — pastikan relasi terdeteksi
 from app.models.task_model import Task  # noqa: F401 — pastikan relasi terdeteksi
-from app.services.auth_service import pwd_context
+from app.services.password_hasher import pwd_context
 
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
