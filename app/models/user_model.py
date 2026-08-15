@@ -17,3 +17,4 @@ class User(Base):
 
     posts: Mapped[list["Post"]] = relationship(back_populates="author")
     tasks: Mapped[list["Task"]] = relationship(back_populates="assignee")
+    products: Mapped[list["Product"]] = relationship(back_populates="owner")
