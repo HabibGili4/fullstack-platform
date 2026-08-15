@@ -9,13 +9,21 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
 - Run dev: `uv run uvicorn app.main:app --reload`
 - Migrate DB (PostgreSQL): `alembic upgrade head`
 - Seed accounts (opsional): `python seed_accounts.py`
+- Seed test users (RBAC): `python seed_roles.py`
+- Run tests: `uv run pytest tests/ -v`
+- Run tests + coverage: `uv run pytest tests/ --cov=app --cov-report=term-missing`
+- Docker compose: `docker compose up --build -d`
+- Docker stop: `docker compose down`
+- Docker stop + hapus data: `docker compose down -v`
 
 ## Struktur & alur
-- Modular route: `app/api/{accounts,health,posts,products,users}.py`
-- Core: `app/core/config.py` (pydantic-settings), `app/core/database.py` (engine + `get_db`)
-- Auth mock: `app/dependencies.py:get_current_user` (hardcoded user, belum JWT/OAuth)
+- Modular route: `app/api/{accounts,health,posts,products,tasks,users}.py`
+- Core: `app/core/config.py` (pydantic-settings), `app/core/database.py` (engine + `get_db`), `app/core/permissions.py` (RBAC), `app/core/logging.py` (setup_logging), `app/core/ports.py` (interfaces)
+- Auth: `app/dependencies/auth.py:get_current_user` (JWT Bearer, bukan mock)
+- DI factories: `app/dependencies/services.py` (get_*_service)
+- Permission check: `app/dependencies/permissions.py:require_permission`
 - Service/Repository pattern di `app/services/*` dan `app/repositories/*`
-- Models: `app/models/*` (SQLAlchemy mapped columns)
+- Models: `app/models/*` (SQLAlchemy mapped columns) — User, Post, Product, Task, Account, RefreshToken
 - DB auto-create saat startup via `Base.metadata.create_all` di lifespan (`app/main.py`)
 
 ## Autentikasi (JWT)
@@ -23,7 +31,7 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
 - Refresh: `POST /api/v1/users/refresh` → body `{"refresh_token": "..."}` → returns token baru + refresh token baru
 - Akses endpoint terproteksi: header `Authorization: Bearer <token>`
 - GET current user: `GET /api/v1/users/me` → returns data user dari token
-- Password hashing: bcrypt via `passlib` (`app/services/auth_service.py`)
+- Password hashing: bcrypt via `passlib` (`app/services/auth_service.py` + `app/services/password_hasher.py`)
 - JWT encode/decode: `python-jose` dengan `HS256` + `SECRET_KEY`
 - Token expiry: access 30 menit, refresh 7 hari (configurable)
 - Refresh token rotation: setiap refresh, token lama di-revoke (single-use)
@@ -39,7 +47,7 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
   | Refresh token expired/sudah dipakai | 401 |
 
 ## Authorization (RBAC)
-- Role: `admin`, `editor`, `user` (default: `user`)
+- Role: `admin`, `manager`, `editor`, `user` (default: `user`)
 - Permissions didefinisikan di `app/core/permissions.py`
 - Cek permission: `require_permission("product:read")` dependency
 - Products endpoint:
@@ -59,20 +67,56 @@ FastAPI learning project (modular). Bukan production-ready. Entry point: `app.ma
 - Role di JWT payload (bukan DB lookup) → user harus login ulang jika role berubah
 - Seed test users: `python seed_roles.py`
 
+## Docker
+- Dockerfile: `python:3.11-slim` + `uv`, port `8001`
+- docker-compose.yml: 2 services (`app` + `db`)
+- Port mapping: app=8001, db=5433 (PostgreSQL)
+- Env strategy: `env_file: .env` + `environment:` override (hanya DATABASE_URL hostname)
+- DB: PostgreSQL 16 Alpine, DB name `engineering_playbook`, healthcheck included
+- Persistent volume: `db_data`
+- Run: `docker compose up --build -d`
+- Logs: `docker compose logs -f app`
+- Akses DB dari host: `psql -h localhost -p 5433 -U postgres -d engineering_playbook`
+
+## Testing
+- Framework: `pytest` + `httpx` + `pytest-cov`
+- 64 tests, 85% coverage
+- Struktur:
+  - `tests/unit/services/` — service tests (mock dependencies)
+  - `tests/unit/repositories/` — repository tests (real DB)
+  - `tests/integration/api/` — API endpoint tests (real DB)
+  - `tests/integration/database/` — DB connection tests
+  - `tests/e2e/` — end-to-end flow tests
+  - `tests/test_security_matrix.py` — auth & RBAC edge cases
+- Jalankan: `uv run pytest tests/ -v`
+- Coverage: `uv run pytest tests/ --cov=app --cov-report=term-missing`
+
 ## Penting (sering salah duga)
-- `get_current_user` hanya mock; banyak endpoint menggunakannya sebagai dependency.
-- Password hashing: SHA-256 via `hashlib` (tanpa salt) di `app/services/user_service.py:28`. Bukan bcrypt/argon2.
+- `get_current_user` pakai JWT Bearer (bukan mock). Token di-decode via `python-jose`, user di-lookup dari DB.
+- Password hashing: bcrypt via `passlib` (`app/services/password_hasher.py`). Bukan SHA-256/hashlib.
 - `alembic.ini` sqlalchemy.url di-override dari `settings.DATABASE_URL` di `alembic/env.py`.
-- Tidak ada CI/lint/test runner yang terlihat di repo; jangan asumsikan ada checks.
+- `docker-compose.yml` pakai `env_file: .env` + `environment:` override. Hanya `DATABASE_URL` yang di-override (hostname `db` vs `localhost`).
+- Role di JWT payload, bukan DB lookup → login ulang jika role berubah.
+- Products punya ownership check: editor hanya bisa update/delete product milik sendiri.
 
 ## File kunci
-- `app/main.py`
-- `app/dependencies.py`
-- `app/core/config.py`
-- `app/core/database.py`
-- `app/services/user_service.py`
-- `alembic.ini`, `alembic/env.py`
-- `seed_accounts.py`
+- `app/main.py` — entry point + lifespan
+- `app/dependencies/auth.py` — get_current_user (JWT Bearer)
+- `app/dependencies/services.py` — DI factories
+- `app/dependencies/permissions.py` — require_permission
+- `app/core/config.py` — Settings (pydantic-settings)
+- `app/core/database.py` — engine + get_db
+- `app/core/permissions.py` — ROLE_PERMISSIONS
+- `app/core/ports.py` — interfaces (IPasswordHasher, ITokenService)
+- `app/services/auth_service.py` — authenticate + refresh
+- `app/services/user_service.py` — CRUD users
+- `app/services/product_service.py` — CRUD products + ownership check
+- `app/repositories/user_repository.py` — DB operations
+- `alembic.ini`, `alembic/env.py` — migrations
+- `Dockerfile` — container build
+- `docker-compose.yml` — orchestration
+- `tests/conftest.py` — test fixtures
+- `seed_accounts.py`, `seed_roles.py` — seed data
 
 ## Opsional: verifikasi singkat
-Kalau mengubah flow auth, pastikan endpoint depend `get_current_user` masih bisa diakses (contoh: `GET /api/v1/users/`).
+Kalau mengubah flow auth, pastikan endpoint depend `get_current_user` masih bisa diakses (contoh: `GET /api/v1/users/`). Jalankan `uv run pytest tests/ -v` untuk memastikan tidak ada regression.
